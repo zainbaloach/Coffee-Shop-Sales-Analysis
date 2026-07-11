@@ -6,9 +6,9 @@ Analyzing six months of coffee shop sales data to identify sales trends, custome
 
 ---
 
-## Live Report
+##                   Live Report
 
-https://your-live-report-link-here
+https://zainbaloach.github.io/Coffee-Shop-Sales-Analysis/
 
 ---
 
@@ -17,6 +17,8 @@ https://your-live-report-link-here
 **Report:** Report.html
 
 **Project File:** Project File.xlsx
+
+Reort Live: https://zainbaloach.github.io/Coffee-Shop-Sales-Analysis/
 
 ---
 
@@ -231,7 +233,11 @@ Project File/Project File.xlsx
 
 ---
 
-# Final Recommendations
+
+## Live Report Link:  https://zainbaloach.github.io/Coffee-Shop-Sales-Analysis/
+
+
+# Final Recommendationss
 
 - Schedule additional staff during the **8:00 AM–10:00 AM** peak business hours to improve service efficiency.
 - Continue promoting high-performing products such as **Barista Espresso** through featured menu placement and seasonal campaigns.

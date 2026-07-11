@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffee Shop Sales Analysis — Business Intelligence Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════ DESIGN TOKENS ═══ */
+:root {
+  --navy:   #0F172A;
+  --slate:  #334155;
+  --slate2: #475569;
+  --muted:  #64748B;
+  --border: #E2E8F0;
+  --bg:     #F8FAFC;
+  --card:   #FFFFFF;
+  --em:     #10B981;
+  --blue:   #2563EB;
+  --amber:  #F59E0B;
+  --red:    #DC2626;
+  --green:  #16A34A;
+  --em-bg:  rgba(16,185,129,0.08);
+  --blue-bg:rgba(37,99,235,0.07);
+  --amber-bg:rgba(245,158,11,0.08);
+  --red-bg:  rgba(220,38,38,0.07);
+
+  --radius-card: 18px;
+  --radius-btn:  12px;
+  --radius-img:  16px;
+  --shadow:    0 10px 40px rgba(15,23,42,0.08);
+  --shadow-lg: 0 20px 60px rgba(15,23,42,0.12);
+  --transition: 250ms ease;
+}
+
+/* ═══════════════════════════════════════ RESET / BASE ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--navy);line-height:1.7;overflow-x:hidden;}
+img{max-width:100%;height:auto;display:block;}
+a{text-decoration:none;color:inherit;}
+ul{list-style:none;}
+
+/* ═══════════════════════════════════════ TYPOGRAPHY ═══ */
+h1,h2,h3,h4{line-height:1.2;letter-spacing:-0.02em;color:var(--navy);}
+h1{font-size:clamp(2.4rem,5vw,4rem);font-weight:800;}
+h2{font-size:clamp(1.7rem,3.2vw,2.5rem);font-weight:700;}
+h3{font-size:1.25rem;font-weight:700;}
+h4{font-size:1rem;font-weight:600;}
+p{color:var(--slate2);line-height:1.8;}
+
+/* ═══════════════════════════════════════ LAYOUT ═══ */
+.container{max-width:1200px;margin:0 auto;padding:0 40px;}
+
+section{padding:100px 0;}
+section:nth-child(even){background:var(--card);}
+
+.section-label{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--em);background:var(--em-bg);
+  padding:5px 14px;border-radius:50px;
+  margin-bottom:20px;font-weight:500;
+}
+.section-intro{font-size:1.05rem;color:var(--muted);max-width:660px;margin-top:14px;line-height:1.85;}
+
+/* ═══════════════════════════════════════ NAV ═══ */
+#topnav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 20px rgba(15,23,42,0.06);
+  transition:var(--transition);
+}
+.nav-inner{
+  max-width:1400px;margin:0 auto;padding:0 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;
+}
+.nav-brand{
+  font-weight:800;font-size:0.92rem;color:var(--navy);
+  display:flex;align-items:center;gap:10px;white-space:nowrap;
+}
+.nav-brand-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--em);flex-shrink:0;
+}
+.nav-links{display:flex;align-items:center;gap:2px;overflow-x:auto;}
+.nav-links a{
+  font-size:11.5px;font-weight:600;color:var(--muted);
+  padding:7px 13px;border-radius:8px;
+  transition:var(--transition);white-space:nowrap;
+}
+.nav-links a:hover,.nav-links a.active{color:var(--navy);background:var(--bg);}
+
+/* ═══════════════════════════════════════ HERO ═══ */
+#hero{
+  padding:160px 0 100px;
+  background:var(--navy);
+  position:relative;overflow:hidden;
+}
+#hero::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 80% at 90% 20%,rgba(16,185,129,0.18) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 60% at 10% 80%,rgba(37,99,235,0.15) 0%,transparent 60%);
+  pointer-events:none;
+}
+/* subtle grid */
+#hero::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+}
+
+.hero-inner{position:relative;z-index:1;}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+  padding:5px 14px;border-radius:50px;
+  border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.7);
+  background:rgba(255,255,255,0.07);
+}
+.badge.em{border-color:rgba(16,185,129,0.4);color:#6ee7b7;background:rgba(16,185,129,0.12);}
+
+.hero-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--em);margin-bottom:20px;
+  display:flex;align-items:center;gap:12px;
+}
+.hero-tag::before{content:'';width:32px;height:1px;background:var(--em);}
+
+.hero-title{
+  font-size:clamp(2.8rem,5.5vw,4.5rem);font-weight:800;
+  color:#fff;line-height:1.05;letter-spacing:-0.03em;
+  margin-bottom:10px;
+}
+.hero-title .accent{color:var(--em);}
+
+.hero-subtitle{
+  font-family:'Lora',serif;font-style:italic;
+  font-size:1.15rem;color:rgba(255,255,255,0.55);
+  margin-bottom:24px;
+}
+
+.hero-desc{
+  font-size:1rem;color:rgba(255,255,255,0.55);
+  max-width:640px;line-height:1.85;margin-bottom:48px;
+}
+
+.hero-period{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:0.16em;text-transform:uppercase;
+  color:rgba(255,255,255,0.4);
+}
+.hero-period::before{content:'📅';}
+
+/* Hero KPI strip */
+.hero-kpi-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:var(--radius-card);overflow:hidden;
+  margin-top:64px;
+}
+.hero-kpi{
+  background:rgba(255,255,255,0.04);
+  padding:32px 28px;
+  transition:background var(--transition);
+}
+.hero-kpi:hover{background:rgba(255,255,255,0.08);}
+.hero-kpi-icon{font-size:1.4rem;margin-bottom:12px;}
+.hero-kpi-val{
+  font-size:clamp(1.6rem,2.5vw,2.2rem);font-weight:800;
+  color:#fff;line-height:1;margin-bottom:8px;letter-spacing:-0.02em;
+}
+.hero-kpi-lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;
+  color:rgba(255,255,255,0.4);margin-bottom:6px;
+}
+.hero-kpi-note{font-size:0.78rem;color:rgba(255,255,255,0.3);line-height:1.5;}
+
+/* ═══════════════════════════════════════ KPI CARDS ═══ */
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:20px;
+}
+.kpi-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-top:3px solid var(--em);
+  border-radius:var(--radius-card);
+  padding:32px 28px;
+  box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition);
+}
+.kpi-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
+.kpi-card:nth-child(2){border-top-color:var(--blue);}
+.kpi-card:nth-child(3){border-top-color:var(--amber);}
+.kpi-card:nth-child(4){border-top-color:#8b5cf6;}
+.kpi-icon{font-size:1.5rem;margin-bottom:16px;}
+.kpi-val{
+  font-size:2rem;font-weight:800;color:var(--navy);
+  line-height:1;margin-bottom:8px;letter-spacing:-0.02em;
+}
+.kpi-lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;
+}
+.kpi-note{font-size:0.8rem;color:var(--muted);line-height:1.6;}
+
+/* ═══════════════════════════════════════ CARDS ═══ */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:36px;
+  box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition);
+}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+
+.card-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;
+  padding:4px 12px;border-radius:50px;
+  display:inline-block;margin-bottom:16px;font-weight:500;
+}
+.tag-em   {background:var(--em-bg);  color:#047857;}
+.tag-blue {background:var(--blue-bg);color:#1d4ed8;}
+.tag-amber{background:var(--amber-bg);color:#b45309;}
+.tag-red  {background:var(--red-bg); color:#b91c1c;}
+.tag-slate{background:rgba(100,116,139,0.1);color:var(--slate);}
+
+.card h3{margin-bottom:12px;}
+.card p{font-size:0.9rem;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+
+/* ═══════════════════════════════════════ TABLES ═══ */
+.table-wrap{
+  border-radius:var(--radius-card);overflow:hidden;
+  border:1px solid var(--border);box-shadow:var(--shadow);
+}
+.premium-table{width:100%;border-collapse:collapse;}
+.premium-table thead th{
+  background:var(--navy);color:rgba(255,255,255,0.85);
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;
+  padding:16px 20px;text-align:left;font-weight:500;
+}
+.premium-table tbody td{
+  padding:15px 20px;font-size:0.88rem;
+  border-bottom:1px solid rgba(226,232,240,0.6);
+  color:var(--slate2);
+}
+.premium-table tbody tr:nth-child(even) td{background:rgba(248,250,252,0.8);}
+.premium-table tbody tr:hover td{background:rgba(16,185,129,0.04);}
+.premium-table tbody tr:last-child td{border-bottom:none;}
+
+/* ═══════════════════════════════════════ PROBLEM CALLOUT ═══ */
+.problem-callout{
+  background:var(--navy);color:white;
+  border-radius:var(--radius-card);
+  padding:48px;
+  border-left:5px solid var(--em);
+  position:relative;overflow:hidden;
+}
+.problem-callout::before{
+  content:'';position:absolute;
+  top:-60px;right:-60px;
+  width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(16,185,129,0.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.problem-callout h3{color:white;font-size:1.5rem;margin-bottom:16px;}
+.problem-callout p{color:rgba(255,255,255,0.65);line-height:1.85;}
+
+/* ═══════════════════════════════════════ OBJECTIVES ═══ */
+.obj-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:28px;
+  display:flex;gap:16px;align-items:flex-start;
+  box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition);
+}
+.obj-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.obj-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;flex-shrink:0;
+  background:var(--em-bg);
+}
+.obj-body h4{margin-bottom:6px;}
+.obj-body p{font-size:0.82rem;color:var(--muted);}
+
+/* ═══════════════════════════════════════ TECH CARDS ═══ */
+.tech-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:28px 24px;text-align:center;
+  box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition);
+}
+.tech-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:var(--em);}
+.tech-icon{font-size:1.8rem;margin-bottom:14px;}
+.tech-card h4{font-size:0.92rem;margin-bottom:6px;}
+.tech-card p{font-size:0.78rem;color:var(--muted);line-height:1.6;}
+
+/* ═══════════════════════════════════════ TIMELINE ═══ */
+.timeline{display:flex;flex-direction:column;gap:0;position:relative;}
+.timeline::before{
+  content:'';position:absolute;left:28px;top:24px;bottom:24px;
+  width:2px;background:linear-gradient(180deg,var(--em) 0%,var(--blue) 100%);
+}
+.tl-item{
+  display:flex;gap:24px;align-items:flex-start;
+  padding:24px 0;
+  position:relative;
+}
+.tl-dot{
+  width:56px;height:56px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--navy);color:white;
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
+  border:3px solid var(--card);
+  box-shadow:0 0 0 2px var(--em);
+  position:relative;z-index:1;
+}
+.tl-body{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:24px 28px;
+  box-shadow:var(--shadow);flex:1;
+  transition:box-shadow var(--transition);
+}
+.tl-body:hover{box-shadow:var(--shadow-lg);}
+.tl-body h4{margin-bottom:10px;}
+.tl-body ul{display:flex;flex-direction:column;gap:6px;}
+.tl-body ul li{
+  font-size:0.86rem;color:var(--muted);padding-left:18px;
+  position:relative;line-height:1.6;
+}
+.tl-body ul li::before{
+  content:'→';position:absolute;left:0;
+  color:var(--em);font-family:'JetBrains Mono',monospace;font-size:10px;
+  top:3px;
+}
+
+/* ═══════════════════════════════════════ DASHBOARD IMG ═══ */
+.dashboard-frame{
+  border:1px solid var(--border);border-radius:var(--radius-card);
+  overflow:hidden;box-shadow:var(--shadow-lg);
+  background:var(--navy);
+}
+.dashboard-placeholder{
+  min-height:380px;
+  background:linear-gradient(135deg,#0F172A 0%,#1e293b 50%,#0F172A 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;position:relative;overflow:hidden;
+}
+.dashboard-placeholder::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 50% 60% at 30% 40%,rgba(16,185,129,0.12) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 50% at 70% 60%,rgba(37,99,235,0.1) 0%,transparent 60%);
+}
+.dashboard-icon{font-size:3.5rem;position:relative;z-index:1;}
+.dashboard-title{
+  font-size:1.15rem;font-weight:700;color:rgba(255,255,255,0.85);
+  position:relative;z-index:1;
+}
+.dashboard-sub{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:0.16em;text-transform:uppercase;
+  color:rgba(255,255,255,0.3);position:relative;z-index:1;
+}
+/* Mini dashboard preview bars */
+.dash-preview{
+  display:flex;gap:12px;padding:24px;
+  position:relative;z-index:1;width:100%;max-width:520px;
+}
+.dash-bar-col{flex:1;display:flex;flex-direction:column;gap:4px;align-items:center;}
+.dash-bar{width:100%;border-radius:4px 4px 0 0;background:var(--em);opacity:0.7;}
+.dash-bar-l{font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.3);}
+
+.fig-caption{
+  padding:14px 24px;border-top:1px solid rgba(255,255,255,0.06);
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:rgba(255,255,255,0.3);
+  background:rgba(0,0,0,0.2);
+}
+
+/* ═══════════════════════════════════════ ANALYSIS PANELS ═══ */
+.analysis-panel{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);overflow:hidden;
+  box-shadow:var(--shadow);margin-bottom:32px;
+}
+.analysis-header{
+  background:var(--navy);padding:24px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;
+}
+.analysis-header-left{display:flex;align-items:center;gap:14px;}
+.analysis-num{
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(16,185,129,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-weight:700;
+  color:var(--em);font-size:13px;flex-shrink:0;
+}
+.analysis-header h3{color:white;font-size:1.05rem;margin:0;}
+.analysis-body{padding:32px;}
+.analysis-fig-caption{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:24px;
+  display:flex;align-items:center;gap:8px;
+}
+.analysis-fig-caption::before{content:'';width:20px;height:1px;background:var(--muted);}
+
+/* Insight cards within analysis */
+.insight-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px;}
+.insight-chip{
+  border-radius:12px;padding:16px 18px;
+}
+.insight-chip.obs   {background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.15);}
+.insight-chip.int   {background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);}
+.insight-chip.impact{background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);}
+.insight-chip.rec   {background:rgba(220,38,38,0.05);border:1px solid rgba(220,38,38,0.12);}
+
+.insight-chip-lbl{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:0.2em;text-transform:uppercase;
+  margin-bottom:8px;font-weight:500;
+}
+.insight-chip.obs    .insight-chip-lbl{color:var(--blue);}
+.insight-chip.int    .insight-chip-lbl{color:#047857;}
+.insight-chip.impact .insight-chip-lbl{color:#b45309;}
+.insight-chip.rec    .insight-chip-lbl{color:#b91c1c;}
+.insight-chip p{font-size:0.82rem;line-height:1.7;color:var(--slate2);}
+
+/* ═══════════════════════════════════════ CHARTS ═══ */
+.chart-container{
+  background:#fafcff;border:1px solid var(--border);
+  border-radius:12px;padding:24px;position:relative;
+}
+
+/* --- DONUT CHARTS --- */
+.donut-wrap{display:flex;gap:32px;align-items:center;flex-wrap:wrap;}
+.donut-svg{flex-shrink:0;}
+.donut-legend{display:flex;flex-direction:column;gap:10px;flex:1;min-width:200px;}
+.donut-leg-item{display:flex;align-items:center;gap:10px;}
+.donut-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.donut-leg-label{font-size:0.84rem;color:var(--slate2);flex:1;}
+.donut-leg-pct{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;font-weight:500;color:var(--navy);
+}
+
+/* --- LINE CHART (hourly) --- */
+.line-chart-wrap{overflow-x:auto;}
+.line-chart{width:100%;min-width:560px;}
+
+/* --- HORIZONTAL BAR --- */
+.hbar-list{display:flex;flex-direction:column;gap:16px;}
+.hbar-row{display:flex;flex-direction:column;gap:6px;}
+.hbar-top{display:flex;justify-content:space-between;align-items:baseline;}
+.hbar-name{font-size:0.88rem;font-weight:600;}
+.hbar-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:var(--em);}
+.hbar-track{height:10px;background:var(--border);border-radius:99px;overflow:hidden;}
+.hbar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--em),#34d399);transition:width 1s cubic-bezier(.16,1,.3,1);}
+
+/* --- VERTICAL BAR (products) --- */
+.vbar-wrap{overflow-x:auto;}
+.vbar-inner{
+  display:flex;align-items:flex-end;gap:10px;
+  height:180px;border-bottom:1px solid var(--border);
+  padding-bottom:0;min-width:480px;
+}
+.vbar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;justify-content:flex-end;}
+.vbar-bar{
+  width:100%;border-radius:6px 6px 0 0;
+  background:linear-gradient(180deg,var(--blue),#60a5fa);
+  transition:opacity .2s;cursor:pointer;position:relative;
+}
+.vbar-bar:hover{opacity:0.82;}
+.vbar-bar-tip{
+  position:absolute;top:-26px;left:50%;transform:translateX(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--navy);white-space:nowrap;font-weight:500;
+}
+.vbar-lbl{
+  font-family:'JetBrains Mono',monospace;font-size:8px;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--muted);margin-top:8px;text-align:center;
+}
+
+/* --- DAY BAR --- */
+.daybar-wrap{display:flex;gap:8px;align-items:flex-end;height:140px;border-bottom:1px solid var(--border);}
+.daybar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;justify-content:flex-end;}
+.daybar-bar{
+  width:100%;border-radius:5px 5px 0 0;
+  background:linear-gradient(180deg,var(--navy),var(--slate));
+  transition:background .2s;
+}
+.daybar-bar.peak{background:linear-gradient(180deg,var(--em),#34d399);}
+.daybar-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:8px;}
+.daybar-val{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-top:2px;}
+
+/* ═══════════════════════════════════════ HIGHLIGHT BOXES ═══ */
+.highlight{
+  border-radius:12px;padding:20px 24px;
+  display:flex;gap:14px;align-items:flex-start;
+  margin:20px 0;
+}
+.highlight.em    {background:var(--em-bg);border:1px solid rgba(16,185,129,0.2);}
+.highlight.blue  {background:var(--blue-bg);border:1px solid rgba(37,99,235,0.2);}
+.highlight.amber {background:var(--amber-bg);border:1px solid rgba(245,158,11,0.2);}
+.highlight.red   {background:var(--red-bg);border:1px solid rgba(220,38,38,0.15);}
+.highlight-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px;}
+.highlight-body h5{font-size:0.88rem;font-weight:700;margin-bottom:4px;}
+.highlight-body p{font-size:0.84rem;line-height:1.7;color:var(--slate2);}
+.highlight.em    .highlight-body h5{color:#047857;}
+.highlight.blue  .highlight-body h5{color:#1d4ed8;}
+.highlight.amber .highlight-body h5{color:#b45309;}
+.highlight.red   .highlight-body h5{color:#b91c1c;}
+
+/* ═══════════════════════════════════════ FINDINGS ═══ */
+.finding-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:28px;
+  display:flex;gap:16px;
+  box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition);
+}
+.finding-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.finding-icon{
+  width:42px;height:42px;border-radius:10px;
+  background:var(--em-bg);display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;flex-shrink:0;
+}
+.finding-body h4{margin-bottom:6px;}
+.finding-body p{font-size:0.83rem;color:var(--muted);}
+
+/* ═══════════════════════════════════════ RECOMMENDATIONS ═══ */
+.rec-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:32px;
+  box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition);
+}
+.rec-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);}
+.rec-priority{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  letter-spacing:0.18em;text-transform:uppercase;
+  padding:4px 12px;border-radius:50px;
+  font-weight:600;margin-bottom:14px;
+}
+.rec-priority.high  {background:rgba(220,38,38,0.1);color:#b91c1c;}
+.rec-priority.med   {background:var(--amber-bg);color:#b45309;}
+.rec-priority.low   {background:var(--em-bg);color:#047857;}
+.rec-card h4{margin-bottom:10px;}
+.rec-card > p{font-size:0.86rem;margin-bottom:16px;}
+.rec-meta{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--border);padding-top:14px;margin-top:4px;}
+.rec-meta-row{display:flex;gap:8px;align-items:flex-start;}
+.rec-meta-key{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);
+  width:70px;flex-shrink:0;padding-top:1px;
+}
+.rec-meta-val{font-size:0.8rem;color:var(--slate2);}
+
+/* ═══════════════════════════════════════ LIMITATIONS ═══ */
+.limit-panel{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:40px;
+  box-shadow:var(--shadow);
+}
+.limit-list{display:flex;flex-direction:column;gap:14px;margin-top:24px;}
+.limit-item{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:16px;border-radius:10px;
+  background:rgba(100,116,139,0.05);
+  border:1px solid rgba(100,116,139,0.1);
+}
+.limit-item::before{
+  content:'⚠';font-size:1rem;flex-shrink:0;
+  width:32px;text-align:center;margin-top:1px;
+}
+.limit-item p{font-size:0.86rem;color:var(--slate2);line-height:1.7;}
+
+/* ═══════════════════════════════════════ ROADMAP ═══ */
+.roadmap-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:16px;
+}
+.roadmap-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:24px;
+  box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition);
+}
+.roadmap-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.roadmap-icon{font-size:1.4rem;margin-bottom:12px;}
+.roadmap-card h4{font-size:0.9rem;margin-bottom:6px;}
+.roadmap-card p{font-size:0.78rem;color:var(--muted);}
+
+/* ═══════════════════════════════════════ TALKING POINTS ═══ */
+.talk-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-card);padding:28px;
+  display:grid;grid-template-columns:56px 1fr;gap:20px;
+  box-shadow:var(--shadow);
+  transition:box-shadow var(--transition);
+}
+.talk-card:hover{box-shadow:var(--shadow-lg);}
+.talk-num{
+  width:56px;height:56px;border-radius:14px;
+  background:var(--navy);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Lora',serif;font-size:1.4rem;font-style:italic;font-weight:600;
+  flex-shrink:0;
+}
+.talk-body h4{font-size:0.92rem;margin-bottom:8px;}
+.talk-body p{font-size:0.83rem;color:var(--muted);line-height:1.7;}
+
+/* ═══════════════════════════════════════ SKILLS ═══ */
+.skill-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:20px;text-align:center;
+  box-shadow:var(--shadow);
+  transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition);
+}
+.skill-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--em);}
+.skill-icon{font-size:1.4rem;margin-bottom:10px;}
+.skill-card h5{font-size:0.82rem;font-weight:700;}
+
+/* ═══════════════════════════════════════ HIGHLIGHTS GRID ═══ */
+.highlights-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:14px;margin-top:48px;
+}
+.hl-tile{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;padding:20px;
+  display:flex;gap:12px;align-items:center;
+}
+.hl-check{color:var(--em);font-size:0.9rem;flex-shrink:0;}
+.hl-tile span{font-size:0.82rem;color:rgba(255,255,255,0.6);font-weight:500;}
+
+/* ═══════════════════════════════════════ CONCLUSION ═══ */
+.conclusion-box{
+  background:var(--navy);color:white;
+  border-radius:var(--radius-card);padding:56px 64px;
+  position:relative;overflow:hidden;
+}
+.conclusion-box::before{
+  content:'"';font-family:'Lora',serif;
+  font-size:16rem;color:rgba(16,185,129,0.07);
+  position:absolute;top:-40px;left:20px;line-height:1;pointer-events:none;
+}
+.conclusion-box h2{color:white;position:relative;z-index:1;margin-bottom:24px;}
+.conclusion-box p{color:rgba(255,255,255,0.65);position:relative;z-index:1;line-height:1.9;margin-bottom:18px;}
+.conclusion-box p:last-child{margin-bottom:0;}
+
+/* ═══════════════════════════════════════ FOOTER ═══ */
+footer{
+  background:var(--navy);padding:48px 0 32px;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.footer-inner{
+  max-width:1200px;margin:0 auto;padding:0 40px;
+}
+.footer-top{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:40px;margin-bottom:40px;
+}
+.footer-brand{font-size:1.1rem;font-weight:800;color:white;margin-bottom:8px;}
+.footer-brand-sub{font-family:'Lora',serif;font-style:italic;font-size:0.88rem;color:rgba(255,255,255,0.4);}
+.footer-col h5{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--em);margin-bottom:14px;
+}
+.footer-col ul li{
+  font-size:0.83rem;color:rgba(255,255,255,0.45);
+  padding:3px 0;
+}
+.footer-bottom{
+  border-top:1px solid rgba(255,255,255,0.08);
+  padding-top:28px;display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;
+}
+.footer-copy{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:rgba(255,255,255,0.25);
+}
+.footer-tech{display:flex;gap:10px;flex-wrap:wrap;}
+.footer-tech-badge{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  letter-spacing:0.14em;text-transform:uppercase;
+  padding:4px 12px;border-radius:50px;
+  border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.35);
+}
+
+/* ═══════════════════════════════════════ PRINT ═══ */
+@media print{
+  #topnav{display:none;}
+  body{background:white;}
+  section{padding:60px 0;break-inside:avoid;}
+  .kpi-card,.card,.analysis-panel{box-shadow:none;break-inside:avoid;}
+  .hero-kpi-strip{break-inside:avoid;}
+  .kpi-card:hover,.card:hover{transform:none;}
+  @page{size:A4;margin:20mm;}
+  table thead{display:table-header-group;}
+}
+
+/* ═══════════════════════════════════════ RESPONSIVE ═══ */
+@media(max-width:1100px){
+  .kpi-grid,.hero-kpi-strip{grid-template-columns:1fr 1fr;}
+  .insight-row,.roadmap-grid,.highlights-strip{grid-template-columns:1fr 1fr;}
+  .four-col{grid-template-columns:1fr 1fr;}
+  .footer-top{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:768px){
+  .container,.footer-inner{padding:0 24px;}
+  .nav-inner{padding:0 24px;}
+  section{padding:64px 0;}
+  .two-col,.three-col{grid-template-columns:1fr;}
+  .kpi-grid,.hero-kpi-strip{grid-template-columns:1fr 1fr;}
+  .insight-row,.roadmap-grid{grid-template-columns:1fr 1fr;}
+  .four-col{grid-template-columns:1fr 1fr;}
+  .conclusion-box{padding:36px 32px;}
+  .footer-top{grid-template-columns:1fr;}
+  .footer-bottom{flex-direction:column;text-align:center;}
+  .donut-wrap{flex-direction:column;align-items:flex-start;}
+}
+@media(max-width:520px){
+  .kpi-grid,.hero-kpi-strip{grid-template-columns:1fr;}
+  .insight-row,.roadmap-grid,.highlights-strip,.four-col{grid-template-columns:1fr;}
+  #hero{padding:120px 0 72px;}
+  h1{font-size:2.2rem;}
+  .talk-card{grid-template-columns:1fr;}
+  .talk-num{width:44px;height:44px;font-size:1.1rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════ NAV ══ -->
+<nav id="topnav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="nav-brand-dot"></div>
+      Coffee Shop Sales Analysis
+    </div>
+    <div class="nav-links">
+      <a href="#summary">Summary</a>
+      <a href="#overview">Overview</a>
+      <a href="#dataset">Dataset</a>
+      <a href="#cleaning">Cleaning</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#kpis">KPIs</a>
+      <a href="#analysis">Analysis</a>
+      <a href="#findings">Findings</a>
+      <a href="#recs">Recommendations</a>
+      <a href="#conclusion">Conclusion</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════ HERO ══ -->
+<section id="hero">
+  <div class="container hero-inner">
+    <div class="hero-tag">Business Intelligence · Data Analytics</div>
+    <h1 class="hero-title">Coffee Shop<br><span class="accent">Sales Analysis</span></h1>
+    <p class="hero-subtitle">Business Intelligence &amp; Sales Performance Analysis Using Microsoft Excel</p>
+    <p class="hero-desc">
+      This project presents a comprehensive sales analysis of a multi-location coffee shop using Microsoft Excel. Through data cleaning, transformation, Pivot Tables, Pivot Charts, KPI development, and dashboard creation, raw transactional sales data was converted into actionable business insights that support data-driven decision-making.
+    </p>
+    <div class="hero-badges">
+      <span class="badge em">☕ Microsoft Excel</span>
+      <span class="badge">📊 Business Intelligence</span>
+      <span class="badge">📈 Data Analytics</span>
+      <span class="badge">🎨 Dashboard Design</span>
+      <span class="badge">🎯 KPI Reporting</span>
+      <span class="badge">🔄 Pivot Tables</span>
+    </div>
+    <p class="hero-period">Analysis Period: January – June</p>
+
+    <div class="hero-kpi-strip">
+      <div class="hero-kpi">
+        <div class="hero-kpi-icon">💰</div>
+        <div class="hero-kpi-lbl">Total Sales</div>
+        <div class="hero-kpi-val">$698,812</div>
+        <div class="hero-kpi-note">Generated over the six-month analysis period</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hero-kpi-icon">🛒</div>
+        <div class="hero-kpi-lbl">Total Orders</div>
+        <div class="hero-kpi-val">149,116</div>
+        <div class="hero-kpi-note">Customer transactions processed across all locations</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hero-kpi-icon">📦</div>
+        <div class="hero-kpi-lbl">Avg Order Value</div>
+        <div class="hero-kpi-val">$4.69</div>
+        <div class="hero-kpi-note">Average revenue generated per customer transaction</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hero-kpi-icon">⚖️</div>
+        <div class="hero-kpi-lbl">Avg Items / Order</div>
+        <div class="hero-kpi-val">1.44</div>
+        <div class="hero-kpi-note">Average number of items purchased per transaction</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ EXECUTIVE SUMMARY ══ -->
+<section id="summary">
+  <div class="container">
+    <div class="section-label">01 — Executive Summary</div>
+    <h2>The Big Picture</h2>
+    <p class="section-intro">A comprehensive overview of the project's scope, methodology, findings, and strategic value.</p>
+
+    <div class="card" style="margin-top:40px;">
+      <p>In today's competitive retail environment, businesses rely on data-driven decision-making to improve operational efficiency, increase profitability, and enhance customer satisfaction. Coffee shops generate a significant volume of transactional data every day, making it essential to analyze sales trends, customer purchasing behavior, and product performance. Without proper analysis, valuable business opportunities may remain undiscovered.</p>
+      <p style="margin-top:16px;">This project presents a comprehensive sales analysis of a coffee shop using Microsoft Excel. The analysis was performed on transactional sales data collected over six months, covering January through June. The dataset includes information related to transaction dates and times, store locations, product categories, product types, quantities sold, unit prices, product sizes, and total sales amounts.</p>
+      <p style="margin-top:16px;">The primary objective of this project was to transform raw sales data into meaningful business insights through data cleaning, transformation, Pivot Tables, and an interactive dashboard. Microsoft Excel was used as the sole analytical tool to organize the data, calculate key performance indicators (KPIs), and develop dynamic visualizations that enable users to explore sales performance across different dimensions.</p>
+      <p style="margin-top:16px;">The dashboard reveals several important insights regarding business performance. The coffee shop generated a total sales revenue of $698,812.33 from 149,116 orders, with an average order value of $4.69 and an average of 1.44 items purchased per transaction. Coffee products emerged as the highest revenue-generating category, accounting for 39% of total sales, while Barista Espresso proved to be the highest-performing product type. Sales activity peaked during the morning hours, particularly between 8:00 AM and 10:00 AM, indicating strong demand during breakfast and commuting hours. Among the three store locations, Hell's Kitchen recorded the highest revenue, although all stores demonstrated relatively balanced performance.</p>
+      <p style="margin-top:16px;">The findings of this analysis provide valuable recommendations for business improvement, including optimizing staffing during peak hours, promoting top-performing products, improving data quality, enhancing product bundling strategies, and strengthening customer engagement through targeted promotions.</p>
+      <p style="margin-top:16px;">Overall, this project demonstrates how Microsoft Excel can effectively support business intelligence and decision-making by converting raw transactional data into actionable insights through structured analysis and interactive visualizations.</p>
+
+      <div class="highlight em" style="margin-top:28px;">
+        <div class="highlight-icon">📌</div>
+        <div class="highlight-body">
+          <h5>Executive Takeaway</h5>
+          <p>Coffee accounts for 39% of all revenue. Morning hours (8–10 AM) are the highest-demand window. Hell's Kitchen leads store performance. Barista Espresso is the single highest-revenue product. Together, these four facts define the business's core strategic priorities.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ PROJECT OVERVIEW ══ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-label">02 — Project Overview</div>
+    <h2>Why This Analysis Matters</h2>
+    <p class="section-intro">Understanding the business context and the strategic value of structured sales analysis.</p>
+
+    <div class="two-col" style="margin-top:40px;">
+      <div class="card">
+        <span class="card-tag tag-em">Business Context</span>
+        <h3>The Retail Data Challenge</h3>
+        <p>The retail food and beverage industry is highly competitive, requiring businesses to continuously monitor their sales performance and customer purchasing behavior. Coffee shops, in particular, serve hundreds or even thousands of customers each day, generating large volumes of transactional data. While this data contains valuable information, it cannot contribute to business growth unless it is properly organized, analyzed, and interpreted.</p>
+        <p style="margin-top:14px;">Sales analysis enables businesses to understand customer preferences, identify popular products, recognize peak business hours, compare store performance, and evaluate overall revenue generation. These insights help management make informed decisions regarding inventory management, staffing, pricing strategies, promotional campaigns, and future business planning.</p>
+      </div>
+      <div class="card">
+        <span class="card-tag tag-blue">Project Scope</span>
+        <h3>Excel as a Business Intelligence Platform</h3>
+        <p>With the increasing availability of business data, Microsoft Excel remains one of the most widely used analytical tools due to its powerful capabilities in data cleaning, transformation, visualization, and reporting. Features such as Pivot Tables, Pivot Charts, slicers, formulas, and dashboards allow analysts to summarize complex datasets and present findings in a clear and interactive manner.</p>
+        <p style="margin-top:14px;">This project focuses on analyzing retail sales data from a coffee shop using Microsoft Excel. The objective is not only to summarize historical sales performance but also to identify patterns and trends that can improve operational efficiency and support strategic business decisions.</p>
+        <p style="margin-top:14px;">An interactive dashboard was developed to visualize important performance indicators, allowing users to filter data by month and day while exploring sales across multiple dimensions such as time, product category, store location, and product type.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ PROBLEM STATEMENT ══ -->
+<section>
+  <div class="container">
+    <div class="section-label">03 — Problem Statement</div>
+    <h2>The Business Challenge</h2>
+    <div class="problem-callout" style="margin-top:40px;">
+      <h3>☕ Turning Transaction Volume into Business Intelligence</h3>
+      <p>Coffee shops process thousands of customer transactions over time, generating large amounts of sales data. Although this information contains valuable insights, manually reviewing thousands of records is both time-consuming and inefficient. Without systematic analysis, it becomes difficult for management to identify customer purchasing patterns, evaluate store performance, monitor sales trends, or determine which products contribute most to business revenue.</p>
+      <p style="margin-top:16px;">The absence of an analytical reporting system can lead to several operational challenges, including ineffective staffing during peak business hours, poor inventory planning, missed sales opportunities, and limited understanding of customer preferences. As a result, business decisions may rely on assumptions rather than factual evidence.</p>
+      <p style="margin-top:16px;">To address these challenges, this project develops an interactive sales analysis dashboard using Microsoft Excel. By cleaning, transforming, and visualizing transactional sales data, the dashboard enables management to monitor key performance indicators, analyze sales across multiple dimensions, and make informed business decisions based on accurate and timely information.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ OBJECTIVES ══ -->
+<section>
+  <div class="container">
+    <div class="section-label">04 — Project Objectives</div>
+    <h2>What This Analysis Set Out to Achieve</h2>
+    <p class="section-intro">Nine analytical objectives spanning time-series analysis, performance benchmarking, and strategic dashboard design.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px;" class="objectives-grid">
+      <div class="obj-card">
+        <div class="obj-icon">⏰</div>
+        <div class="obj-body">
+          <h4>Temporal Sales Patterns</h4>
+          <p>Analyze how sales vary by day of the week and hour of the day.</p>
+        </div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">📈</div>
+        <div class="obj-body">
+          <h4>Peak Hour Identification</h4>
+          <p>Identify peak business hours with the highest customer activity.</p>
+        </div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">📅</div>
+        <div class="obj-body">
+          <h4>Monthly Revenue Tracking</h4>
+          <p>Calculate and compare monthly sales revenue across the six-month period.</p>
+        </div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">🏪</div>
+        <div class="obj-body">
+          <h4>Store Performance Evaluation</h4>
+          <p>Evaluate sales performance across the three store locations.</p>
+        </div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">💰</div>
+        <div class="obj-body">
+          <h4>Transaction Value Metrics</h4>
+          <p>Determine the average order value and average number of items purchased per transaction.</p>
+        </div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">🏆</div>
+        <div class="obj-body">
+          <h4>Product Revenue Ranking</h4>
+          <p>Identify the best-selling products based on revenue generation.</p>
+        </div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">🍩</div>
+        <div class="obj-body">
+          <h4>Category Revenue Distribution</h4>
+          <p>Analyze revenue distribution across different product categories and product types.</p>
+        </div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">🎛️</div>
+        <div class="obj-body">
+          <h4>Interactive Dashboard</h4>
+          <p>Design a dashboard that enables users to explore sales trends dynamically using filters and slicers.</p>
+        </div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">💡</div>
+        <div class="obj-body">
+          <h4>Business Recommendations</h4>
+          <p>Provide practical business recommendations based on the analytical findings.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ DATASET OVERVIEW ══ -->
+<section id="dataset">
+  <div class="container">
+    <div class="section-label">05 — Dataset Overview</div>
+    <h2>The Data Behind the Analysis</h2>
+    <p class="section-intro">Transactional sales records from multiple coffee shop locations across a six-month observation window.</p>
+
+    <div class="card" style="margin-top:40px;margin-bottom:28px;">
+      <p>The dataset used in this project contains transactional sales records collected from multiple coffee shop locations over a six-month period. Each record represents an individual customer transaction and includes information related to products, stores, quantities, pricing, and transaction timing.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>Column Name</th>
+            <th>Description</th>
+            <th>Purpose in Analysis</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Transaction ID</strong></td><td>Unique identifier assigned to each transaction.</td><td>Record deduplication and counting</td></tr>
+          <tr><td><strong>Transaction Date</strong></td><td>Date of transaction.</td><td>Monthly and daily trend analysis</td></tr>
+          <tr><td><strong>Transaction Time</strong></td><td>Time of transaction.</td><td>Hourly demand pattern analysis</td></tr>
+          <tr><td><strong>Store ID</strong></td><td>Store identifier.</td><td>Location-level aggregation</td></tr>
+          <tr><td><strong>Store Location</strong></td><td>Branch location.</td><td>Store performance comparison</td></tr>
+          <tr><td><strong>Product ID</strong></td><td>Product identifier.</td><td>Product-level revenue tracking</td></tr>
+          <tr><td><strong>Transaction Quantity</strong></td><td>Quantity purchased.</td><td>Volume and items-per-order metrics</td></tr>
+          <tr><td><strong>Unit Price</strong></td><td>Price per unit.</td><td>Pricing analysis and revenue calculation</td></tr>
+          <tr><td><strong>Product Category</strong></td><td>Main category.</td><td>Category revenue distribution</td></tr>
+          <tr><td><strong>Product Type</strong></td><td>Specific product type.</td><td>Product type revenue ranking</td></tr>
+          <tr><td><strong>Product Detail</strong></td><td>Detailed product description.</td><td>Granular product analysis</td></tr>
+          <tr><td><strong>Size</strong></td><td>Product size.</td><td>Size-based revenue distribution</td></tr>
+          <tr><td><strong>Total Amount</strong></td><td>Total transaction amount.</td><td>Primary revenue metric</td></tr>
+          <tr><td><strong>Month Name</strong></td><td>Extracted month.</td><td>Monthly trend visualization</td></tr>
+          <tr><td><strong>Day Name</strong></td><td>Extracted weekday.</td><td>Day-of-week demand analysis</td></tr>
+          <tr><td><strong>Hour</strong></td><td>Extracted hour.</td><td>Hourly demand pattern charting</td></tr>
+          <tr><td><strong>Month</strong></td><td>Numeric month.</td><td>Pivot Table sorting and filtering</td></tr>
+          <tr><td><strong>Day of Week</strong></td><td>Numeric weekday.</td><td>Weekday ordering and sorting</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ TOOLS ══ -->
+<section>
+  <div class="container">
+    <div class="section-label">06 — Tools &amp; Technologies</div>
+    <h2>Analytical Toolkit</h2>
+    <p class="section-intro">Every component of this analysis was built using Microsoft Excel's powerful data analysis and visualization capabilities.</p>
+
+    <div class="four-col" style="margin-top:40px;">
+      <div class="tech-card"><div class="tech-icon">📊</div><h4>Microsoft Excel</h4><p>Core analytical platform for all data operations, calculations, and dashboard development.</p></div>
+      <div class="tech-card"><div class="tech-icon">🔄</div><h4>Pivot Tables</h4><p>Dynamic aggregation of revenue, orders, and metrics across all analytical dimensions.</p></div>
+      <div class="tech-card"><div class="tech-icon">📈</div><h4>Pivot Charts</h4><p>Live-linked charts generated directly from pivot data for accurate visual representation.</p></div>
+      <div class="tech-card"><div class="tech-icon">🎨</div><h4>Dashboard Design</h4><p>Structured visual layout combining KPI cards, charts, and interactive controls.</p></div>
+      <div class="tech-card"><div class="tech-icon">🧹</div><h4>Data Cleaning</h4><p>Systematic validation and correction of raw transactional records before analysis.</p></div>
+      <div class="tech-card"><div class="tech-icon">⚙️</div><h4>Data Transformation</h4><p>Feature engineering to extract Month, Day, and Hour fields for temporal analysis.</p></div>
+      <div class="tech-card"><div class="tech-icon">🎯</div><h4>KPI Reporting</h4><p>Calculation and display of key performance metrics including total sales and average order value.</p></div>
+      <div class="tech-card"><div class="tech-icon">🎛️</div><h4>Slicers &amp; Filters</h4><p>Interactive Month and Day slicers enabling dynamic data exploration by the user.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ DATA CLEANING ══ -->
+<section id="cleaning">
+  <div class="container">
+    <div class="section-label">07 — Data Cleaning &amp; Transformation</div>
+    <h2>From Raw Data to Analysis-Ready Dataset</h2>
+    <p class="section-intro">Raw transactional data often contains inconsistencies that can affect the quality of analysis. Five structured steps prepared the dataset for accurate insights.</p>
+
+    <div class="timeline" style="margin-top:48px;">
+      <div class="tl-item">
+        <div class="tl-dot">01</div>
+        <div class="tl-body">
+          <h4>Data Validation</h4>
+          <ul>
+            <li>Reviewed the dataset for missing values and inconsistencies.</li>
+            <li>Verified Transaction Quantity, Unit Price, and Total Amount fields.</li>
+            <li>Ensured all transactional records were complete and suitable for analysis.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">02</div>
+        <div class="tl-body">
+          <h4>Data Formatting</h4>
+          <ul>
+            <li>Standardized date and time formats across the entire dataset.</li>
+            <li>Converted fields into analysis-ready formats compatible with Pivot Tables.</li>
+            <li>Improved consistency across the dataset to prevent aggregation errors.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">03</div>
+        <div class="tl-body">
+          <h4>Feature Engineering</h4>
+          <ul>
+            <li>Month Name — Extracted for readable monthly trend analysis.</li>
+            <li>Month — Numeric representation for sorting and filtering.</li>
+            <li>Day Name — Weekday label for day-of-week demand patterns.</li>
+            <li>Day of Week — Numeric value for sequential ordering in charts.</li>
+            <li>Hour — Integer extracted from Transaction Time for hourly analysis.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">04</div>
+        <div class="tl-body">
+          <h4>Data Aggregation via Pivot Tables</h4>
+          <ul>
+            <li>Revenue by Product Category</li>
+            <li>Revenue by Product Type</li>
+            <li>Revenue by Store Location</li>
+            <li>Hourly Ordered Quantity</li>
+            <li>Orders by Day of Week</li>
+            <li>Revenue by Product Size</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">05</div>
+        <div class="tl-body">
+          <h4>Dashboard Development</h4>
+          <ul>
+            <li>KPI Cards displaying Total Sales, Total Orders, Average Order Value, and Average Items per Transaction.</li>
+            <li>Pivot Charts for all visualized dimensions.</li>
+            <li>Interactive Slicers for Month and Day filtering.</li>
+            <li>Dynamic Filters enabling real-time data exploration.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ DASHBOARD OVERVIEW ══ -->
+<section id="dashboard">
+  <div class="container">
+    <div class="section-label">08 — Dashboard Overview</div>
+    <h2>Interactive Analytics Dashboard</h2>
+    <p class="section-intro">A single-screen business intelligence view enabling multi-dimensional exploration of coffee shop performance.</p>
+
+    <div class="dashboard-frame" style="margin-top:40px;">
+      <div class="dashboard-placeholder">
+        <div class="dashboard-icon">☕</div>
+        <div class="dashboard-title">Coffee Shop Sales Dashboard</div>
+        <div class="dashboard-sub">Microsoft Excel · Interactive Dashboard · Jan–Jun</div>
+        <!-- Mini bar preview -->
+        <div class="dash-preview">
+          <div class="dash-bar-col">
+            <div class="dash-bar" style="height:60px;"></div>
+            <div class="dash-bar-l">Coffee</div>
+          </div>
+          <div class="dash-bar-col">
+            <div class="dash-bar" style="height:43px;background:#60a5fa;"></div>
+            <div class="dash-bar-l">Tea</div>
+          </div>
+          <div class="dash-bar-col">
+            <div class="dash-bar" style="height:18px;background:#fbbf24;"></div>
+            <div class="dash-bar-l">Bakery</div>
+          </div>
+          <div class="dash-bar-col">
+            <div class="dash-bar" style="height:15px;background:#a78bfa;"></div>
+            <div class="dash-bar-l">Choc.</div>
+          </div>
+          <div class="dash-bar-col">
+            <div class="dash-bar" style="height:9px;background:#f87171;"></div>
+            <div class="dash-bar-l">Beans</div>
+          </div>
+        </div>
+      </div>
+      <div class="fig-caption">Figure 1. Interactive Coffee Shop Sales Dashboard (Microsoft Excel)</div>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <p>The dashboard provides an interactive overview of coffee shop sales performance across multiple business dimensions. Users can filter the data using Month and Day slicers while monitoring key performance indicators, hourly ordering trends, store performance, product categories, product sizes, and top-performing products.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ KPIs ══ -->
+<section id="kpis">
+  <div class="container">
+    <div class="section-label">09 — Key Performance Indicators</div>
+    <h2>Business Performance at a Glance</h2>
+    <p class="section-intro">Four headline metrics that define the operational scale and commercial performance of the coffee shop.</p>
+
+    <div class="kpi-grid" style="margin-top:40px;">
+      <div class="kpi-card">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-lbl">Total Sales</div>
+        <div class="kpi-val">$698,812.33</div>
+        <div class="kpi-note">Total revenue generated across all store locations during the six-month analysis period.</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🛒</div>
+        <div class="kpi-lbl">Total Orders</div>
+        <div class="kpi-val">149,116</div>
+        <div class="kpi-note">Total customer transactions processed across Hell's Kitchen, Astoria, and Lower Manhattan.</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-lbl">Average Order Value</div>
+        <div class="kpi-val">$4.69</div>
+        <div class="kpi-note">Average revenue generated per individual customer transaction.</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">⚖️</div>
+        <div class="kpi-lbl">Avg Items / Transaction</div>
+        <div class="kpi-val">1.44</div>
+        <div class="kpi-note">Average number of product items purchased by each customer per visit.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ DASHBOARD ANALYSIS ══ -->
+<section id="analysis">
+  <div class="container">
+    <div class="section-label">10 — Dashboard Analysis</div>
+    <h2>Visual Insights &amp; Business Intelligence</h2>
+    <p class="section-intro">Seven analytical panels — each covering a distinct business dimension with observations, interpretations, impact, and recommendations.</p>
+
+    <div style="margin-top:48px;">
+
+      <!-- Analysis 1: Overall Performance -->
+      <div class="analysis-panel">
+        <div class="analysis-header">
+          <div class="analysis-header-left">
+            <div class="analysis-num">1</div>
+            <h3>Overall Sales Performance</h3>
+          </div>
+        </div>
+        <div class="analysis-body">
+          <div class="analysis-fig-caption">Figure 1.1 — KPI Summary Overview</div>
+          <p>During the six-month analysis period, the coffee shop generated total sales revenue of $698,812.33 from 149,116 customer orders. The average order value was $4.69, while customers purchased an average of 1.44 items per transaction.</p>
+          <p style="margin-top:12px;">These metrics indicate a high-volume retail operation where frequent customer visits generate sustainable revenue despite relatively low individual purchase values.</p>
+          <div class="insight-row">
+            <div class="insight-chip obs">
+              <div class="insight-chip-lbl">📋 Observation</div>
+              <p>$698,812.33 total revenue from 149,116 orders over six months — approximately $116,000 per month.</p>
+            </div>
+            <div class="insight-chip int">
+              <div class="insight-chip-lbl">🧠 Interpretation</div>
+              <p>High-frequency, low-value transactions characterize the business model. Volume is the primary revenue driver.</p>
+            </div>
+            <div class="insight-chip impact">
+              <div class="insight-chip-lbl">📈 Business Impact</div>
+              <p>Strategies that increase average order value — even marginally — would have outsized revenue impact at this transaction volume.</p>
+            </div>
+            <div class="insight-chip rec">
+              <div class="insight-chip-lbl">💡 Recommendation</div>
+              <p>Implement upselling prompts and bundle promotions to lift the average transaction value above $5.00.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis 2: Hourly Demand -->
+      <div class="analysis-panel">
+        <div class="analysis-header">
+          <div class="analysis-header-left">
+            <div class="analysis-num">2</div>
+            <h3>Hourly Ordered Quantity — Demand by Time of Day</h3>
+          </div>
+        </div>
+        <div class="analysis-body">
+          <div class="analysis-fig-caption">Figure 2.1 — Hourly Transaction Volume (6 AM – 8 PM)</div>
+
+          <!-- SVG Line Chart -->
+          <div class="chart-container">
+            <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" class="line-chart">
+              <!-- Grid lines -->
+              <line x1="60" y1="20" x2="740" y2="20" stroke="#e2e8f0" stroke-width="1"/>
+              <line x1="60" y1="60" x2="740" y2="60" stroke="#e2e8f0" stroke-width="1"/>
+              <line x1="60" y1="100" x2="740" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+              <line x1="60" y1="140" x2="740" y2="140" stroke="#e2e8f0" stroke-width="1"/>
+              <line x1="60" y1="180" x2="740" y2="180" stroke="#e2e8f0" stroke-width="1"/>
+              <!-- Y labels -->
+              <text x="50" y="24"  font-size="9" fill="#94a3b8" text-anchor="end" font-family="JetBrains Mono,monospace">High</text>
+              <text x="50" y="104" font-size="9" fill="#94a3b8" text-anchor="end" font-family="JetBrains Mono,monospace">Mid</text>
+              <text x="50" y="184" font-size="9" fill="#94a3b8" text-anchor="end" font-family="JetBrains Mono,monospace">Low</text>
+              <!-- X axis labels -->
+              <text x="65"  y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">6AM</text>
+              <text x="125" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">7AM</text>
+              <text x="185" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">8AM</text>
+              <text x="245" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">9AM</text>
+              <text x="305" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">10AM</text>
+              <text x="365" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">11AM</text>
+              <text x="425" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">12PM</text>
+              <text x="485" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">2PM</text>
+              <text x="545" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">4PM</text>
+              <text x="605" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">6PM</text>
+              <text x="665" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">7PM</text>
+              <text x="725" y="205" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-family="JetBrains Mono,monospace">8PM</text>
+              <!-- Gradient fill area -->
+              <defs>
+                <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#10B981" stop-opacity="0.18"/>
+                  <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <polygon points="65,176 125,155 185,50 245,32 305,42 365,95 425,105 485,100 545,108 605,155 665,170 725,178 725,180 65,180" fill="url(#lineGrad)"/>
+              <!-- Line -->
+              <polyline points="65,176 125,155 185,50 245,32 305,42 365,95 425,105 485,100 545,108 605,155 665,170 725,178"
+                fill="none" stroke="#10B981" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <!-- Peak dots -->
+              <circle cx="185" cy="50"  r="5" fill="#10B981" stroke="white" stroke-width="2"/>
+              <circle cx="245" cy="32"  r="7" fill="#10B981" stroke="white" stroke-width="2.5"/>
+              <circle cx="305" cy="42"  r="5" fill="#10B981" stroke="white" stroke-width="2"/>
+              <!-- Peak annotation -->
+              <rect x="200" y="14" width="108" height="20" rx="4" fill="#10B981"/>
+              <text x="254" y="27" font-size="9" fill="white" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="600">PEAK: 8AM – 10AM</text>
+              <!-- Axes -->
+              <line x1="60" y1="180" x2="740" y2="180" stroke="#cbd5e1" stroke-width="1.5"/>
+              <line x1="60" y1="20"  x2="60"  y2="180" stroke="#cbd5e1" stroke-width="1.5"/>
+            </svg>
+          </div>
+
+          <div class="insight-row" style="margin-top:20px;">
+            <div class="insight-chip obs">
+              <div class="insight-chip-lbl">📋 Observation</div>
+              <p>Sales begin around 6 AM, surge rapidly from 7 AM, peak between 8–10 AM, then gradually decline through the day. Evening hours experience the lowest order volume.</p>
+            </div>
+            <div class="insight-chip int">
+              <div class="insight-chip-lbl">🧠 Interpretation</div>
+              <p>The morning rush (commute + breakfast) drives the majority of daily transactions. The business operates in a demand pattern heavily front-loaded before noon.</p>
+            </div>
+            <div class="insight-chip impact">
+              <div class="insight-chip-lbl">📈 Business Impact</div>
+              <p>Morning hours represent the most critical operating period. Under-preparation during this window directly limits revenue capture during peak demand.</p>
+            </div>
+            <div class="insight-chip rec">
+              <div class="insight-chip-lbl">💡 Recommendation</div>
+              <p>Staffing, inventory preparation, and equipment readiness should be fully optimized before 8 AM peak demand begins. Consider staggered shift starts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis 3: Product Category -->
+      <div class="analysis-panel">
+        <div class="analysis-header">
+          <div class="analysis-header-left">
+            <div class="analysis-num">3</div>
+            <h3>Revenue by Product Category</h3>
+          </div>
+        </div>
+        <div class="analysis-body">
+          <div class="analysis-fig-caption">Figure 3.1 — Revenue Distribution by Product Category (Donut Chart)</div>
+          <div class="chart-container">
+            <div class="donut-wrap">
+              <svg viewBox="0 0 200 200" width="200" height="200" class="donut-svg">
+                <defs>
+                  <style>
+                    .donut-seg{stroke-width:48;fill:none;stroke-linecap:butt;}
+                  </style>
+                </defs>
+                <!-- r=76, circumference=477.5 -->
+                <!-- Coffee 39%=186.2, Loose Tea 28%=133.7, Bakery 12%=57.3, Drinking Choc 10%=47.75, Coffee Beans 6%=28.65, Branded 2%=9.55, Flavours 1%=4.775, Other 1%=4.775 -->
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#10B981"
+                  stroke-dasharray="186.2 291.3" stroke-dashoffset="119.4" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#2563EB"
+                  stroke-dasharray="133.7 343.8" stroke-dashoffset="-66.8" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#F59E0B"
+                  stroke-dasharray="57.3 420.2" stroke-dashoffset="-200.5" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#8B5CF6"
+                  stroke-dasharray="47.75 429.75" stroke-dashoffset="-257.8" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#EC4899"
+                  stroke-dasharray="28.65 448.85" stroke-dashoffset="-305.55" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#64748B"
+                  stroke-dasharray="9.55 467.95" stroke-dashoffset="-334.2" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#0EA5E9"
+                  stroke-dasharray="4.775 472.725" stroke-dashoffset="-343.75" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#94A3B8"
+                  stroke-dasharray="4.775 472.725" stroke-dashoffset="-348.525" transform="rotate(-90 100 100)"/>
+                <!-- Center -->
+                <circle r="52" cx="100" cy="100" fill="white"/>
+                <text x="100" y="95" text-anchor="middle" font-size="11" fill="#0F172A" font-weight="800" font-family="Plus Jakarta Sans,sans-serif">39%</text>
+                <text x="100" y="110" text-anchor="middle" font-size="8" fill="#64748B" font-family="Plus Jakarta Sans,sans-serif">Coffee</text>
+              </svg>
+              <div class="donut-legend">
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#10B981;"></div><div class="donut-leg-label">Coffee</div><div class="donut-leg-pct">39%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#2563EB;"></div><div class="donut-leg-label">Loose Tea</div><div class="donut-leg-pct">28%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#F59E0B;"></div><div class="donut-leg-label">Bakery</div><div class="donut-leg-pct">12%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#8B5CF6;"></div><div class="donut-leg-label">Drinking Chocolate</div><div class="donut-leg-pct">10%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#EC4899;"></div><div class="donut-leg-label">Coffee Beans</div><div class="donut-leg-pct">6%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#64748B;"></div><div class="donut-leg-label">Branded</div><div class="donut-leg-pct">2%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#0EA5E9;"></div><div class="donut-leg-label">Flavours</div><div class="donut-leg-pct">1%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#94A3B8;"></div><div class="donut-leg-label">Other</div><div class="donut-leg-pct">1%</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="highlight em" style="margin-top:16px;">
+            <div class="highlight-icon">📌</div>
+            <div class="highlight-body">
+              <h5>Key Insight</h5>
+              <p>Coffee is the primary revenue driver, while Loose Tea provides strong secondary revenue. Bakery products support additional revenue through complementary purchases.</p>
+            </div>
+          </div>
+          <div class="highlight blue">
+            <div class="highlight-icon">💡</div>
+            <div class="highlight-body">
+              <h5>Recommendation</h5>
+              <p>Promote beverage-and-bakery bundles to increase average transaction value. Coffee + Bakery bundles leverage the top two complementary categories simultaneously.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis 4: Product Size -->
+      <div class="analysis-panel">
+        <div class="analysis-header">
+          <div class="analysis-header-left">
+            <div class="analysis-num">4</div>
+            <h3>Revenue by Product Size</h3>
+          </div>
+        </div>
+        <div class="analysis-body">
+          <div class="analysis-fig-caption">Figure 4.1 — Revenue Distribution by Product Size (Donut Chart)</div>
+          <div class="chart-container">
+            <div class="donut-wrap">
+              <svg viewBox="0 0 200 200" width="200" height="200" class="donut-svg">
+                <!-- r=76, circ=477.5 -->
+                <!-- Large 34%=162.35, Not Defined 31%=148.025, Regular 28%=133.7, Small 7%=33.425 -->
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#2563EB"
+                  stroke-dasharray="162.35 315.15" stroke-dashoffset="119.4" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#64748B"
+                  stroke-dasharray="148.025 329.475" stroke-dashoffset="-42.95" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#10B981"
+                  stroke-dasharray="133.7 343.8" stroke-dashoffset="-190.975" transform="rotate(-90 100 100)"/>
+                <circle class="donut-seg" r="76" cx="100" cy="100" stroke="#F59E0B"
+                  stroke-dasharray="33.425 444.075" stroke-dashoffset="-324.675" transform="rotate(-90 100 100)"/>
+                <circle r="52" cx="100" cy="100" fill="white"/>
+                <text x="100" y="95" text-anchor="middle" font-size="11" fill="#0F172A" font-weight="800" font-family="Plus Jakarta Sans,sans-serif">34%</text>
+                <text x="100" y="110" text-anchor="middle" font-size="8" fill="#64748B" font-family="Plus Jakarta Sans,sans-serif">Large</text>
+              </svg>
+              <div class="donut-legend">
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#2563EB;"></div><div class="donut-leg-label">Large</div><div class="donut-leg-pct">34%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#64748B;"></div><div class="donut-leg-label">Not Defined</div><div class="donut-leg-pct">31%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#10B981;"></div><div class="donut-leg-label">Regular</div><div class="donut-leg-pct">28%</div></div>
+                <div class="donut-leg-item"><div class="donut-leg-dot" style="background:#F59E0B;"></div><div class="donut-leg-label">Small</div><div class="donut-leg-pct">7%</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="highlight em">
+            <div class="highlight-icon">📌</div>
+            <div class="highlight-body">
+              <h5>Key Insight</h5>
+              <p>Large beverages generate the greatest revenue contribution. However, the high percentage of "Not Defined" records (31%) indicates a significant data quality issue that obscures the true size distribution.</p>
+            </div>
+          </div>
+          <div class="highlight amber">
+            <div class="highlight-icon">⚠️</div>
+            <div class="highlight-body">
+              <h5>Data Quality Observation</h5>
+              <p>31% of records have no product size recorded. This limits the accuracy of size-based analysis and prevents reliable product size strategy development.</p>
+            </div>
+          </div>
+          <div class="highlight blue">
+            <div class="highlight-icon">💡</div>
+            <div class="highlight-body">
+              <h5>Recommendation</h5>
+              <p>Improve Point-of-Sale data entry procedures to ensure product sizes are consistently recorded for every transaction. Enforce size field as mandatory at checkout.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis 5: Store Performance -->
+      <div class="analysis-panel">
+        <div class="analysis-header">
+          <div class="analysis-header-left">
+            <div class="analysis-num">5</div>
+            <h3>Store Revenue Performance Comparison</h3>
+          </div>
+        </div>
+        <div class="analysis-body">
+          <div class="analysis-fig-caption">Figure 5.1 — Total Revenue by Store Location (Horizontal Bar Chart)</div>
+          <div class="chart-container">
+            <div class="hbar-list">
+              <div class="hbar-row">
+                <div class="hbar-top">
+                  <div class="hbar-name">Hell's Kitchen</div>
+                  <div class="hbar-val">$236,511.17</div>
+                </div>
+                <div class="hbar-track"><div class="hbar-fill" style="width:100%;"></div></div>
+              </div>
+              <div class="hbar-row">
+                <div class="hbar-top">
+                  <div class="hbar-name">Astoria</div>
+                  <div class="hbar-val">$232,243.91</div>
+                </div>
+                <div class="hbar-track"><div class="hbar-fill" style="width:98.2%;background:linear-gradient(90deg,var(--blue),#60a5fa);"></div></div>
+              </div>
+              <div class="hbar-row">
+                <div class="hbar-top">
+                  <div class="hbar-name">Lower Manhattan</div>
+                  <div class="hbar-val">$230,057.25</div>
+                </div>
+                <div class="hbar-track"><div class="hbar-fill" style="width:97.3%;background:linear-gradient(90deg,#8b5cf6,#c4b5fd);"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="insight-row" style="margin-top:16px;">
+            <div class="insight-chip obs">
+              <div class="insight-chip-lbl">📋 Observation</div>
+              <p>The performance spread across all three stores is remarkably tight — from $230K to $236K, a difference of only $6,454.</p>
+            </div>
+            <div class="insight-chip int">
+              <div class="insight-chip-lbl">🧠 Interpretation</div>
+              <p>All three locations demonstrate balanced, healthy performance. No single store significantly underperforms or dominates the revenue mix.</p>
+            </div>
+            <div class="insight-chip impact">
+              <div class="insight-chip-lbl">📈 Business Impact</div>
+              <p>Operational consistency across all stores is a competitive strength. The company has achieved replicable performance without heavy differentiation.</p>
+            </div>
+            <div class="insight-chip rec">
+              <div class="insight-chip-lbl">💡 Recommendation</div>
+              <p>Study Hell's Kitchen's operational practices and identify whether any specific approach drives its marginal revenue lead. Replicate where applicable.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis 6: Top Products -->
+      <div class="analysis-panel">
+        <div class="analysis-header">
+          <div class="analysis-header-left">
+            <div class="analysis-num">6</div>
+            <h3>Top Revenue-Generating Products</h3>
+          </div>
+        </div>
+        <div class="analysis-body">
+          <div class="analysis-fig-caption">Figure 6.1 — Revenue by Top 5 Product Types (Vertical Bar Chart)</div>
+          <div class="chart-container">
+            <div class="vbar-wrap">
+              <div class="vbar-inner">
+                <div class="vbar-col">
+                  <div class="vbar-bar" style="height:100%;position:relative;">
+                    <div class="vbar-bar-tip">$91,406</div>
+                  </div>
+                  <div class="vbar-lbl">Barista<br>Espresso</div>
+                </div>
+                <div class="vbar-col">
+                  <div class="vbar-bar" style="height:84%;background:linear-gradient(180deg,#8b5cf6,#c4b5fd);">
+                    <div class="vbar-bar-tip">$77,082</div>
+                  </div>
+                  <div class="vbar-lbl">Brewed<br>Chai Tea</div>
+                </div>
+                <div class="vbar-col">
+                  <div class="vbar-bar" style="height:79%;background:linear-gradient(180deg,#10B981,#6ee7b7);">
+                    <div class="vbar-bar-tip">$72,416</div>
+                  </div>
+                  <div class="vbar-lbl">Hot<br>Chocolate</div>
+                </div>
+                <div class="vbar-col">
+                  <div class="vbar-bar" style="height:77%;background:linear-gradient(180deg,#F59E0B,#fcd34d);">
+                    <div class="vbar-bar-tip">$70,035</div>
+                  </div>
+                  <div class="vbar-lbl">Gourmet<br>Brewed Coffee</div>
+                </div>
+                <div class="vbar-col">
+                  <div class="vbar-bar" style="height:52%;background:linear-gradient(180deg,#EC4899,#f9a8d4);">
+                    <div class="vbar-bar-tip">$47,932</div>
+                  </div>
+                  <div class="vbar-lbl">Brewed<br>Black Tea</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="highlight em" style="margin-top:16px;">
+            <div class="highlight-icon">🏆</div>
+            <div class="highlight-body">
+              <h5>Key Insight</h5>
+              <p>Premium coffee beverages dominate total revenue. Barista Espresso alone generates $91,406 — approximately 13% of total revenue — making it the single most important product in the portfolio.</p>
+            </div>
+          </div>
+          <div class="highlight blue">
+            <div class="highlight-icon">💡</div>
+            <div class="highlight-body">
+              <h5>Recommendation</h5>
+              <p>Feature these top products prominently in promotions, loyalty campaigns, and seasonal offerings. Pair Barista Espresso with Bakery items to drive combination purchases.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis 7: Day of Week -->
+      <div class="analysis-panel">
+        <div class="analysis-header">
+          <div class="analysis-header-left">
+            <div class="analysis-num">7</div>
+            <h3>Orders by Day of Week</h3>
+          </div>
+        </div>
+        <div class="analysis-body">
+          <div class="analysis-fig-caption">Figure 7.1 — Total Orders by Day of Week (Column Chart)</div>
+          <div class="chart-container">
+            <div class="daybar-wrap">
+              <div class="daybar-col">
+                <div class="daybar-bar peak" style="height:100%;"></div>
+                <div class="daybar-lbl">Fri</div>
+                <div class="daybar-val">21,701</div>
+              </div>
+              <div class="daybar-col">
+                <div class="daybar-bar" style="height:99.8%;"></div>
+                <div class="daybar-lbl">Thu</div>
+                <div class="daybar-val">21,654</div>
+              </div>
+              <div class="daybar-col">
+                <div class="daybar-bar" style="height:99.7%;"></div>
+                <div class="daybar-lbl">Mon</div>
+                <div class="daybar-val">21,643</div>
+              </div>
+              <div class="daybar-col">
+                <div class="daybar-bar" style="height:98.2%;"></div>
+                <div class="daybar-lbl">Wed</div>
+                <div class="daybar-val">21,310</div>
+              </div>
+              <div class="daybar-col">
+                <div class="daybar-bar" style="height:97.7%;"></div>
+                <div class="daybar-lbl">Tue</div>
+                <div class="daybar-val">21,202</div>
+              </div>
+              <div class="daybar-col">
+                <div class="daybar-bar" style="height:97.2%;"></div>
+                <div class="daybar-lbl">Sun</div>
+                <div class="daybar-val">21,096</div>
+              </div>
+              <div class="daybar-col">
+                <div class="daybar-bar" style="height:94.5%;"></div>
+                <div class="daybar-lbl">Sat</div>
+                <div class="daybar-val">20,510</div>
+              </div>
+            </div>
+          </div>
+          <div class="insight-row" style="margin-top:16px;">
+            <div class="insight-chip obs">
+              <div class="insight-chip-lbl">📋 Observation</div>
+              <p>Friday (21,701 orders) leads all weekdays. Saturday (20,510) records the lowest order volume of the week.</p>
+            </div>
+            <div class="insight-chip int">
+              <div class="insight-chip-lbl">🧠 Interpretation</div>
+              <p>Demand is remarkably consistent across all seven days — a spread of only 1,191 orders between the highest and lowest day.</p>
+            </div>
+            <div class="insight-chip impact">
+              <div class="insight-chip-lbl">📈 Business Impact</div>
+              <p>No single day requires dramatically different resource allocation. Staffing and inventory can be planned at a relatively consistent weekly level.</p>
+            </div>
+            <div class="insight-chip rec">
+              <div class="insight-chip-lbl">💡 Recommendation</div>
+              <p>Explore weekend-specific promotions to lift Saturday volumes. The 5.7% gap from Friday to Saturday represents a manageable, targeted improvement opportunity.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end analysis panels -->
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ KEY FINDINGS ══ -->
+<section id="findings">
+  <div class="container">
+    <div class="section-label">11 — Key Findings</div>
+    <h2>What the Data Confirms</h2>
+    <p class="section-intro">Seven evidence-backed findings that define the coffee shop's current commercial performance and strategic position.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:40px;">
+      <div class="finding-card">
+        <div class="finding-icon">💰</div>
+        <div class="finding-body"><h4>Total Sales Exceeded $698,000</h4><p>The coffee shop generated $698,812.33 in total revenue during the six-month analysis period — a strong performance across all three locations.</p></div>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">☕</div>
+        <div class="finding-body"><h4>Coffee — 39% of Total Revenue</h4><p>Coffee contributed 39% of all sales, firmly establishing it as the primary and most commercially critical product category in the portfolio.</p></div>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">⏰</div>
+        <div class="finding-body"><h4>Peak Activity: 8 AM – 10 AM</h4><p>Peak customer activity occurred during the morning hours, with the highest demand observed between 8:00 AM and 10:00 AM across all store locations.</p></div>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">🏪</div>
+        <div class="finding-body"><h4>Hell's Kitchen Generated the Highest Revenue</h4><p>Among the three locations, Hell's Kitchen recorded $236,511.17 — the highest store revenue — though all three stores demonstrated closely balanced performance.</p></div>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">🏆</div>
+        <div class="finding-body"><h4>Barista Espresso — Highest Revenue Product</h4><p>Barista Espresso generated $91,406.20 — the highest single-product revenue figure — making it the most commercially significant individual product in the portfolio.</p></div>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">📏</div>
+        <div class="finding-body"><h4>Large Beverages Generate Greatest Revenue</h4><p>Large-sized beverages generated the greatest revenue contribution at 34%. However, 31% of size records were undefined, indicating a data quality challenge requiring attention.</p></div>
+      </div>
+      <div class="finding-card" style="grid-column:1/-1;">
+        <div class="finding-icon">📅</div>
+        <div class="finding-body"><h4>Sales Remained Consistent Across Weekdays</h4><p>Order volumes demonstrated remarkable consistency across all seven days of the week — ranging from 20,510 (Saturday) to 21,701 (Friday) — a difference of only 5.7%. This operational stability enables predictable staffing and inventory planning throughout the week.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ RECOMMENDATIONS ══ -->
+<section id="recs">
+  <div class="container">
+    <div class="section-label">12 — Business Recommendations</div>
+    <h2>Strategic Actions for Business Growth</h2>
+    <p class="section-intro">Nine evidence-grounded recommendations spanning staffing, data quality, product strategy, and customer engagement — prioritised by business impact.</p>
+
+    <h3 style="margin-top:48px;margin-bottom:20px;font-size:1rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;">🔴 High Priority</h3>
+    <div class="three-col" style="margin-bottom:40px;">
+      <div class="rec-card">
+        <span class="rec-priority high">⚡ High Priority</span>
+        <h4>Increase Staffing During Morning Peak Hours</h4>
+        <p>Sales peak sharply between 8:00 AM and 10:00 AM. Understaffing during this critical window directly limits revenue capture and customer experience quality.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Reduced wait times, higher transaction throughput, improved customer satisfaction during peak demand</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Increased revenue per peak hour and reduced customer churn during rush periods</div></div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <span class="rec-priority high">⚡ High Priority</span>
+        <h4>Improve POS Data Quality for Product Sizes</h4>
+        <p>31% of product size records are "Not Defined" — making size-based revenue analysis unreliable and obscuring an important product strategy dimension.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Clean data enables reliable size-based pricing analysis and upselling strategy development</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Full size distribution visibility; improved product and pricing decisions</div></div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <span class="rec-priority high">⚡ High Priority</span>
+        <h4>Ensure High-Demand Beverages Remain Fully Stocked</h4>
+        <p>Barista Espresso and Brewed Chai Tea together account for a significant portion of revenue. Stock-outs during peak hours directly translate into lost revenue.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Protects revenue from top-performing products during the highest-demand periods</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Reduced missed sales and improved customer satisfaction for repeat purchasers</div></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:20px;font-size:1rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;">🟡 Medium Priority</h3>
+    <div class="three-col" style="margin-bottom:40px;">
+      <div class="rec-card">
+        <span class="rec-priority med">◆ Medium Priority</span>
+        <h4>Expand Premium Coffee Offerings</h4>
+        <p>Coffee drives 39% of revenue. Expanding the premium coffee range can further strengthen this dominant category and capture higher-value customer preferences.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Increases average order value within the highest-revenue category</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Incremental revenue growth from premium pricing within the established customer base</div></div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <span class="rec-priority med">◆ Medium Priority</span>
+        <h4>Introduce Beverage and Bakery Combo Promotions</h4>
+        <p>Coffee (39%) and Bakery (12%) together account for 51% of revenue. Bundling promotions leverage these complementary categories to increase per-transaction value.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Lifts average order value from $4.69 toward or above $5.50 through structured bundles</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Increased per-visit revenue without requiring additional customer acquisition</div></div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <span class="rec-priority med">◆ Medium Priority</span>
+        <h4>Strengthen Customer Loyalty Programs</h4>
+        <p>High transaction volume (149,116 orders) provides a strong foundation for loyalty program engagement. Repeat customer incentives protect the existing revenue base.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Increased customer retention and visit frequency among existing customers</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Higher lifetime customer value and reduced customer acquisition cost over time</div></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:20px;font-size:1rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;">🟢 Low Priority</h3>
+    <div class="three-col">
+      <div class="rec-card">
+        <span class="rec-priority low">● Low Priority</span>
+        <h4>Monitor Monthly Store Performance</h4>
+        <p>Continue tracking individual store revenue monthly to detect any emerging divergence from the currently balanced three-store performance distribution.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Early detection of underperformance before it becomes a structural problem</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Sustained performance consistency across all three locations</div></div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <span class="rec-priority low">● Low Priority</span>
+        <h4>Introduce Seasonal Beverages</h4>
+        <p>Seasonal offerings create customer interest, drive trial of new products, and can generate incremental revenue alongside the existing product portfolio.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Drives customer curiosity, media interest, and incremental visits during seasonal windows</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Revenue lift during seasonal periods and increased customer engagement</div></div>
+        </div>
+      </div>
+      <div class="rec-card">
+        <span class="rec-priority low">● Low Priority</span>
+        <h4>Continue Dashboard-Driven Decision Making</h4>
+        <p>The analytical infrastructure built in this project should become a permanent management reporting tool — updated regularly with new transactional data.</p>
+        <div class="rec-meta">
+          <div class="rec-meta-row"><div class="rec-meta-key">Benefit</div><div class="rec-meta-val">Sustained access to data-driven insights without repeated analytical investment</div></div>
+          <div class="rec-meta-row"><div class="rec-meta-key">Outcome</div><div class="rec-meta-val">Institutionalised business intelligence capability across the organisation</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ LIMITATIONS ══ -->
+<section>
+  <div class="container">
+    <div class="section-label">13 — Challenges &amp; Limitations</div>
+    <h2>Analytical Boundaries</h2>
+    <p class="section-intro">Recognising the constraints of the analysis is a mark of analytical rigour — not a weakness.</p>
+    <div class="limit-panel" style="margin-top:40px;">
+      <div class="limit-list">
+        <div class="limit-item"><p><strong>Historical sales data only.</strong> The analysis covers January through June. Seasonal patterns, year-over-year comparisons, and long-term trend analysis are not possible with a six-month dataset.</p></div>
+        <div class="limit-item"><p><strong>No customer demographic information.</strong> Without demographic data, it is not possible to segment customers by age, gender, or preference — limiting the precision of targeting recommendations.</p></div>
+        <div class="limit-item"><p><strong>No profit or operating cost analysis.</strong> Revenue figures are available, but without cost data, profitability per product, category, or store cannot be calculated — making true margin analysis impossible.</p></div>
+        <div class="limit-item"><p><strong>No inventory management data.</strong> The analysis cannot assess stock availability, wastage, or supply chain efficiency — important operational dimensions for a food and beverage business.</p></div>
+        <div class="limit-item"><p><strong>External factors unavailable.</strong> Data on holidays, weather conditions, local events, and competitor activity was not incorporated — all of which can meaningfully influence daily sales volumes.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ FUTURE ENHANCEMENTS ══ -->
+<section>
+  <div class="container">
+    <div class="section-label">14 — Future Enhancements</div>
+    <h2>The Roadmap Ahead</h2>
+    <p class="section-intro">Eight analytical and technical enhancements that would extend the depth, accuracy, and strategic value of this project.</p>
+
+    <div class="roadmap-grid" style="margin-top:40px;">
+      <div class="roadmap-card"><div class="roadmap-icon">👥</div><h4>Customer Segmentation</h4><p>Demographic analysis to identify high-value customer profiles and tailor marketing.</p></div>
+      <div class="roadmap-card"><div class="roadmap-icon">💹</div><h4>Profitability Analysis</h4><p>Integrate cost data to calculate true margins by product, category, and store.</p></div>
+      <div class="roadmap-card"><div class="roadmap-icon">🔮</div><h4>Sales Forecasting</h4><p>Statistical models to predict future demand and support proactive inventory planning.</p></div>
+      <div class="roadmap-card"><div class="roadmap-icon">🤖</div><h4>Machine Learning Models</h4><p>Predictive algorithms for demand forecasting, churn detection, and product recommendations.</p></div>
+      <div class="roadmap-card"><div class="roadmap-icon">⚡</div><h4>Power BI Integration</h4><p>Migrate the dashboard to Power BI for enhanced interactivity and real-time refresh capabilities.</p></div>
+      <div class="roadmap-card"><div class="roadmap-icon">📊</div><h4>Tableau Dashboard</h4><p>Build a parallel Tableau version for wider stakeholder accessibility and advanced visualisation.</p></div>
+      <div class="roadmap-card"><div class="roadmap-icon">🔗</div><h4>Live Database Connectivity</h4><p>Connect directly to the POS database for real-time, automated dashboard updates.</p></div>
+      <div class="roadmap-card"><div class="roadmap-icon">📦</div><h4>Inventory Optimisation</h4><p>Integrate stock management data to align inventory levels with actual demand patterns.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ CONCLUSION ══ -->
+<section id="conclusion">
+  <div class="container">
+    <div class="section-label">15 — Conclusion</div>
+    <h2>Closing the Analysis</h2>
+    <div class="conclusion-box" style="margin-top:40px;">
+      <h2>Microsoft Excel as a Business Intelligence Platform</h2>
+      <p>This project demonstrates how Microsoft Excel can effectively transform raw transactional sales data into actionable business intelligence. Through data cleaning, feature engineering, Pivot Tables, Pivot Charts, KPIs, and dashboard development, the project provides meaningful insights into customer behavior, sales performance, and operational efficiency.</p>
+      <p>The findings support informed decision-making by helping management optimize staffing, improve inventory planning, promote high-performing products, and strengthen overall business performance.</p>
+      <p>Overall, the project illustrates the value of business intelligence and dashboard reporting in enabling data-driven retail management.</p>
+    </div>
+
+    <!-- Project Highlights strip -->
+    <div class="highlights-strip" style="background:var(--navy);border-radius:var(--radius-card);padding:32px;margin-top:0;border-radius:0 0 var(--radius-card) var(--radius-card);">
+      <div class="hl-tile"><div class="hl-check">✔</div><span>149,116 Transactions Analyzed</span></div>
+      <div class="hl-tile"><div class="hl-check">✔</div><span>$698K Revenue Examined</span></div>
+      <div class="hl-tile"><div class="hl-check">✔</div><span>Interactive Dashboard Built</span></div>
+      <div class="hl-tile"><div class="hl-check">✔</div><span>KPI Reporting System</span></div>
+      <div class="hl-tile"><div class="hl-check">✔</div><span>7 Business Recommendations</span></div>
+      <div class="hl-tile"><div class="hl-check">✔</div><span>Executive Report Produced</span></div>
+      <div class="hl-tile"><div class="hl-check">✔</div><span>Responsive HTML Delivery</span></div>
+      <div class="hl-tile"><div class="hl-check">✔</div><span>Premium UI/UX Design</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ TALKING POINTS ══ -->
+<section>
+  <div class="container">
+    <div class="section-label">16 — Presentation Talking Points</div>
+    <h2>Ready to Present</h2>
+    <p class="section-intro">Structured speaking notes for interviews, university presentations, portfolio walkthroughs, and professional demonstrations.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:40px;">
+      <div class="talk-card">
+        <div class="talk-num">1</div>
+        <div class="talk-body">
+          <h4>Project Introduction</h4>
+          <p>"This project is a Coffee Shop Sales Analysis built entirely in Microsoft Excel. The goal was to transform raw transactional data from a multi-location coffee shop into actionable business insights through a structured analytical workflow and an interactive dashboard."</p>
+        </div>
+      </div>
+      <div class="talk-card">
+        <div class="talk-num">2</div>
+        <div class="talk-body">
+          <h4>Dataset</h4>
+          <p>"The dataset contains 149,116 transactional records spanning six months across three store locations. Each record captures transaction date, time, store location, product details, size, quantity, unit price, and total amount."</p>
+        </div>
+      </div>
+      <div class="talk-card">
+        <div class="talk-num">3</div>
+        <div class="talk-body">
+          <h4>Data Cleaning</h4>
+          <p>"Before analysis, I validated and standardized the raw data. I also performed feature engineering — extracting Month, Day, and Hour fields — which enabled the temporal analysis that became central to the project's findings."</p>
+        </div>
+      </div>
+      <div class="talk-card">
+        <div class="talk-num">4</div>
+        <div class="talk-body">
+          <h4>Dashboard</h4>
+          <p>"The interactive dashboard combines KPI cards, Pivot Charts, and interactive slicers that allow users to filter by Month and Day. It provides a single-screen view of all key business dimensions without requiring any external tools."</p>
+        </div>
+      </div>
+      <div class="talk-card">
+        <div class="talk-num">5</div>
+        <div class="talk-body">
+          <h4>KPIs</h4>
+          <p>"The four headline KPIs are $698,812.33 total revenue, 149,116 total orders, $4.69 average order value, and 1.44 average items per transaction. These establish the operational scale of the business immediately."</p>
+        </div>
+      </div>
+      <div class="talk-card">
+        <div class="talk-num">6</div>
+        <div class="talk-body">
+          <h4>Key Insights</h4>
+          <p>"Coffee drives 39% of revenue. Morning peak is 8–10 AM. Hell's Kitchen leads stores. Barista Espresso is the top product at $91,406. The 31% 'Not Defined' size records represent the most critical data quality issue."</p>
+        </div>
+      </div>
+      <div class="talk-card">
+        <div class="talk-num">7</div>
+        <div class="talk-body">
+          <h4>Recommendations</h4>
+          <p>"My top three recommendations are: optimise morning staffing before the 8 AM peak, fix POS size recording to resolve the 31% data gap, and introduce coffee-bakery bundle promotions to lift the $4.69 average order value."</p>
+        </div>
+      </div>
+      <div class="talk-card">
+        <div class="talk-num">8</div>
+        <div class="talk-body">
+          <h4>Conclusion</h4>
+          <p>"This project demonstrates that Microsoft Excel, used with analytical rigour, can serve as a genuine business intelligence platform. The dashboard is not just a summary — it is a decision-support tool that management can use to respond to changing business conditions."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ SKILLS ══ -->
+<section style="background:var(--navy);">
+  <div class="container">
+    <div class="section-label" style="background:rgba(16,185,129,0.15);color:var(--em);">17 — Skills Demonstrated</div>
+    <h2 style="color:white;">Technical &amp; Analytical Competencies</h2>
+    <p class="section-intro" style="color:rgba(255,255,255,0.45);">Every capability exercised in this project — from raw data handling through to executive presentation.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px;" class="skills-grid">
+      <div class="skill-card"><div class="skill-icon">📊</div><h5>Microsoft Excel</h5></div>
+      <div class="skill-card"><div class="skill-icon">🔄</div><h5>Pivot Tables</h5></div>
+      <div class="skill-card"><div class="skill-icon">📈</div><h5>Pivot Charts</h5></div>
+      <div class="skill-card"><div class="skill-icon">🎨</div><h5>Dashboard Design</h5></div>
+      <div class="skill-card"><div class="skill-icon">🧠</div><h5>Business Intelligence</h5></div>
+      <div class="skill-card"><div class="skill-icon">🧹</div><h5>Data Cleaning</h5></div>
+      <div class="skill-card"><div class="skill-icon">⚙️</div><h5>Data Transformation</h5></div>
+      <div class="skill-card"><div class="skill-icon">🔍</div><h5>Data Analysis</h5></div>
+      <div class="skill-card"><div class="skill-icon">🎯</div><h5>KPI Reporting</h5></div>
+      <div class="skill-card"><div class="skill-icon">📉</div><h5>Data Visualization</h5></div>
+      <div class="skill-card"><div class="skill-icon">💡</div><h5>Analytical Thinking</h5></div>
+      <div class="skill-card"><div class="skill-icon">📖</div><h5>Business Storytelling</h5></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════ FOOTER ══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">Coffee Shop Sales Analysis</div>
+        <div class="footer-brand-sub">Business Intelligence Case Study</div>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.3);margin-top:12px;line-height:1.7;">A comprehensive sales analysis project built using Microsoft Excel, transforming raw transactional data into actionable business intelligence through structured analysis and interactive dashboard design.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Project Details</h5>
+        <ul>
+          <li>Analysis Period: January – June</li>
+          <li>Total Transactions: 149,116</li>
+          <li>Total Revenue: $698,812.33</li>
+          <li>Store Locations: 3</li>
+          <li>Analytical Tool: Microsoft Excel</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Sections</h5>
+        <ul>
+          <li>Executive Summary</li>
+          <li>Dataset Overview</li>
+          <li>Data Cleaning Process</li>
+          <li>Dashboard Analysis</li>
+          <li>Key Findings</li>
+          <li>Business Recommendations</li>
+          <li>Conclusion</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">Coffee Shop Sales Analysis · Business Intelligence Report · Prepared for Portfolio Demonstration</div>
+      <div class="footer-tech">
+        <span class="footer-tech-badge">Microsoft Excel</span>
+        <span class="footer-tech-badge">HTML5</span>
+        <span class="footer-tech-badge">CSS3</span>
+        <span class="footer-tech-badge">Responsive Design</span>
+        <span class="footer-tech-badge">Data Analytics</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Minimal JS: active nav highlighting on scroll
+(function(){
+  const links = document.querySelectorAll('.nav-links a');
+  const sections = [];
+  links.forEach(a=>{
+    const id = a.getAttribute('href').replace('#','');
+    const el = document.getElementById(id);
+    if(el) sections.push({id,el,a});
+  });
+  function onScroll(){
+    const y = window.scrollY + 120;
+    let current = null;
+    sections.forEach(s=>{
+      if(s.el.offsetTop <= y) current = s;
+    });
+    links.forEach(a=>a.classList.remove('active'));
+    if(current) current.a.classList.add('active');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>
